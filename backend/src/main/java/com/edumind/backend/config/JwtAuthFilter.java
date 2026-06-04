@@ -36,9 +36,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         // Read Authorization header — expected format: "Bearer <token>"
         String authHeader = request.getHeader("Authorization");
+        System.out.println("Auth header: " + authHeader);
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7); // Remove "Bearer " prefix
+            System.out.println("Token valid: " + jwtUtil.isTokenValid(token));
+            System.out.println("Token first 20 chars: " + token.substring(0, 20));
 
             if (jwtUtil.isTokenValid(token)) {
                 String email = jwtUtil.extractEmail(token);

@@ -3,6 +3,8 @@ package com.edumind.backend.controller;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,4 +49,15 @@ public class AuthController {
     public Map<String, String> authFailure() {
         return Map.of("message", "Login failed. Please try again.");
     }
+
+    @GetMapping("/validate")
+public ResponseEntity<Map<String, Object>> validate(Authentication authentication) {
+    if (authentication == null) {
+        return ResponseEntity.ok(Map.of("authenticated", false));
+    }
+    return ResponseEntity.ok(Map.of(
+        "authenticated", true,
+        "principal", authentication.getPrincipal().toString()
+    ));
+}
 }
