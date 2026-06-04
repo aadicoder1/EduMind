@@ -14,7 +14,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 @Service
-public class GrService {
+public class GroqService {
 
     @Value("${groq.api.key}")
     private String apiKey;
@@ -22,13 +22,18 @@ public class GrService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final Gson gson = new Gson();
 
-    private static final String GROQ_URL =
-        "https://api.groq.com/openai/v1/chat/completions";
+    private static final String GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+    private static final int MAX_TEXT_LENGTH = 3000;
+
+    // Truncate rawText to avoid hitting Groq token limits
+    private String truncate(String text) {
+        if (text == null) return "";
+        return text.length() > MAX_TEXT_LENGTH ? text.substring(0, MAX_TEXT_LENGTH) : text;
+    }
 
     // Core method — sends prompt to Groq and returns response
     public String generate(String prompt) {
 
-        // Build message in OpenAI format which Groq uses
         JsonObject message = new JsonObject();
         message.addProperty("role", "user");
         message.addProperty("content", prompt);
@@ -51,7 +56,6 @@ public class GrService {
             GROQ_URL, HttpMethod.POST, entity, String.class
         );
 
-        // Parse Groq response
         JsonObject responseJson = gson.fromJson(response.getBody(), JsonObject.class);
         return responseJson
             .getAsJsonArray("choices")
@@ -68,7 +72,7 @@ public class GrService {
             Keep it under 300 words.
             
             Notes:
-            """ + noteText;
+            """ + truncate(noteText);
         return generate(prompt);
     }
 
@@ -83,7 +87,7 @@ public class GrService {
             Make questions clear and answers concise.
             
             Notes:
-            """ + noteText;
+            """ + truncate(noteText);
         return generate(prompt);
     }
 
@@ -95,7 +99,7 @@ public class GrService {
             Keep the answer clear and concise.
             
             Notes:
-            """ + noteText + """
+            """ + truncate(noteText) + """
             
             Question:
             """ + question;

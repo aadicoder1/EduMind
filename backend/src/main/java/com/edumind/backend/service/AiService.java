@@ -17,7 +17,7 @@ public class AiService {
     private AiOutputRepository aiOutputRepository;
 
     @Autowired
-    private GeminiService geminiService;
+    private GroqService groqService;
 
     // Generate summary — checks if already exists first
     public AiOutput summarize(String noteId) {
@@ -25,7 +25,7 @@ public class AiService {
         return aiOutputRepository.findByNoteIdAndType(noteId, "SUMMARY")
             .orElseGet(() -> {
                 Note note = getNoteOrThrow(noteId);
-                String summary = geminiService.summarize(note.getRawText());
+                String summary = groqService.summarize(note.getRawText());
                 return saveOutput(note, "SUMMARY", summary);
             });
     }
@@ -35,7 +35,7 @@ public class AiService {
         return aiOutputRepository.findByNoteIdAndType(noteId, "FLASHCARD")
             .orElseGet(() -> {
                 Note note = getNoteOrThrow(noteId);
-                String flashcards = geminiService.generateFlashcards(note.getRawText());
+                String flashcards = groqService.generateFlashcards(note.getRawText());
                 return saveOutput(note, "FLASHCARD", flashcards);
             });
     }
@@ -43,7 +43,7 @@ public class AiService {
     // Chat — always generates fresh response
     public AiOutput chat(String noteId, String question) {
         Note note = getNoteOrThrow(noteId);
-        String answer = geminiService.chat(note.getRawText(), question);
+        String answer = groqService.chat(note.getRawText(), question);
 
         // Save chat message to ai_outputs with question included
         AiOutput chatOutput = new AiOutput();
