@@ -1,11 +1,12 @@
 package com.edumind.backend.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.edumind.backend.model.AiOutput;
 import com.edumind.backend.model.Note;
 import com.edumind.backend.repository.AiOutputRepository;
 import com.edumind.backend.repository.NoteRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class AiService {
@@ -38,19 +39,6 @@ public class AiService {
                 String flashcards = groqService.generateFlashcards(note.getRawText());
                 return saveOutput(note, "FLASHCARD", flashcards);
             });
-    }
-
-    // Chat — always generates fresh response
-    public AiOutput chat(String noteId, String question) {
-        Note note = getNoteOrThrow(noteId);
-        String answer = groqService.chat(note.getRawText(), question);
-
-        // Save chat message to ai_outputs with question included
-        AiOutput chatOutput = new AiOutput();
-        chatOutput.setNote(note);
-        chatOutput.setType("CHAT");
-        chatOutput.setContent("Q: " + question + "\nA: " + answer);
-        return aiOutputRepository.save(chatOutput);
     }
 
     // Helper — fetch note or throw error

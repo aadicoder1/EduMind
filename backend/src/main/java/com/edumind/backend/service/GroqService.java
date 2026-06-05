@@ -105,4 +105,23 @@ public class GroqService {
             """ + question;
         return generate(prompt);
     }
+
+public String chatWithContext(String noteText, String conversationHistory, String question) {
+    String prompt = """
+        You are a study assistant for a university student.
+        Answer ONLY based on the notes provided below.
+        If the topic is not covered in the notes, clearly say:
+        "This topic is not covered in your notes."
+        Then explain it anyway, but match the same style, tone and depth as the notes.
+
+        --- NOTES ---
+        """ + truncate(noteText) + """
+
+        --- CONVERSATION SO FAR ---
+        """ + conversationHistory + """
+
+        --- STUDENT'S QUESTION ---
+        """ + question;
+    return generate(prompt);
+}
 }

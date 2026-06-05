@@ -1,8 +1,8 @@
 package com.edumind.backend.controller;
 
+import com.edumind.backend.dto.PublicNoteDTO;
 import com.edumind.backend.model.Note;
 import com.edumind.backend.model.User;
-import com.edumind.backend.repository.UserRepository;
 import com.edumind.backend.service.NoteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +20,6 @@ public class NoteController {
     @Autowired
     private NoteService noteService;
 
-    @Autowired
-    private UserRepository userRepository;
-
     @PostMapping("/upload")
     public ResponseEntity<?> uploadNote(
             @RequestParam("file") MultipartFile file,
@@ -30,7 +27,6 @@ public class NoteController {
             @RequestParam("chapterId") String chapterId,
             Authentication authentication) throws IOException {
 
-        // Get user from authentication object directly
         User user = (User) authentication.getPrincipal();
         Note note = noteService.uploadNote(file, title, chapterId, user);
         return ResponseEntity.ok(note);
@@ -43,7 +39,7 @@ public class NoteController {
     }
 
     @GetMapping("/public")
-    public ResponseEntity<List<Note>> getPublicNotes() {
+    public ResponseEntity<List<PublicNoteDTO>> getPublicNotes() {
         return ResponseEntity.ok(noteService.getPublicNotes());
     }
 
