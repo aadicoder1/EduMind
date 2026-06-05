@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.edumind.backend.model.ChatMessage;
 import com.edumind.backend.model.Conversation;
 import com.edumind.backend.model.User;
-import com.edumind.backend.repository.UserRepository;
 import com.edumind.backend.service.ConversationService;
+// ✅ Removed unused: import com.edumind.backend.repository.UserRepository;
 
 @RestController
 @RequestMapping("/api/conversations")
@@ -27,9 +27,7 @@ public class ConversationController {
 
     @Autowired
     private ConversationService conversationService;
-
-    @Autowired
-    private UserRepository userRepository;
+    // ✅ Removed unused: @Autowired private UserRepository userRepository;
 
     private User getAuthenticatedUser(Authentication authentication) {
         return (User) authentication.getPrincipal();
