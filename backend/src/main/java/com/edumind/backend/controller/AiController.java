@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.edumind.backend.model.AiOutput;
+import com.edumind.backend.repository.AiOutputRepository;
 import com.edumind.backend.service.AiService;
 
 @RestController
@@ -18,15 +19,31 @@ public class AiController {
     @Autowired
     private AiService aiService;
 
-    // Generate summary from note
+    @Autowired
+    private AiOutputRepository aiOutputRepository;
+
     @PostMapping("/summarize/{noteId}")
     public ResponseEntity<AiOutput> summarize(@PathVariable String noteId) {
         return ResponseEntity.ok(aiService.summarize(noteId));
     }
 
-    // Generate flashcards from note
     @PostMapping("/flashcards/{noteId}")
     public ResponseEntity<AiOutput> flashcards(@PathVariable String noteId) {
+        return ResponseEntity.ok(aiService.generateFlashcards(noteId));
+    }
+
+    // Force regenerate — deletes cache and re-calls Groq
+    @PostMapping("/summarize/{noteId}/regenerate")
+    public ResponseEntity<AiOutput> regenerateSummary(@PathVariable String noteId) {
+        aiOutputRepository.findByNoteIdAndType(noteId, "SUMMARY")
+            .ifPresent(aiOutputRepository::delete);
+        return ResponseEntity.ok(aiService.summarize(noteId));
+    }
+
+    @PostMapping("/flashcards/{noteId}/regenerate")
+    public ResponseEntity<AiOutput> regenerateFlashcards(@PathVariable String noteId) {
+        aiOutputRepository.findByNoteIdAndType(noteId, "FLASHCARD")
+            .ifPresent(aiOutputRepository::delete);
         return ResponseEntity.ok(aiService.generateFlashcards(noteId));
     }
 

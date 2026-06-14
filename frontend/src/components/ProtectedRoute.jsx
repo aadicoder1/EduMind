@@ -1,15 +1,16 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
+  const location = useLocation()
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-ink-950 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-slate-500 text-sm font-body">Loading...</p>
+      <div style={{ minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+          <div style={{ width: 28, height: 28, border: '2px solid var(--text-muted)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+          <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
         </div>
       </div>
     )
@@ -18,10 +19,19 @@ export default function ProtectedRoute({ children }) {
   if (!user) {
     return <Navigate to="/login" replace />
   }
+  console.log('user:', user)
+console.log('profileComplete:', user?.profileComplete)
+console.log('pathname:', location.pathname)
 
-  // If user hasn't set up their profile, redirect to setup
-  if (!user.profileComplete && window.location.pathname !== '/setup') {
+
+  // Only redirect to /setup if profile is incomplete AND we're not already on /setup
+  if (!user.profileComplete && location.pathname !== '/setup') {
     return <Navigate to="/setup" replace />
+  }
+
+  // If profile is complete and user tries to go to /setup, redirect to dashboard
+  if (user.profileComplete && location.pathname === '/setup') {
+    return <Navigate to="/dashboard" replace />
   }
 
   return children

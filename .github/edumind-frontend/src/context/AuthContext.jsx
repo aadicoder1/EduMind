@@ -7,7 +7,6 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // On mount, check if we have a token and fetch profile
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (token) {
@@ -17,13 +16,11 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  // Handle OAuth callback — token comes as ?token= query param
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const token = params.get('token')
     if (token) {
       localStorage.setItem('token', token)
-      // Clean URL
       window.history.replaceState({}, '', window.location.pathname)
       fetchProfile()
     }
@@ -31,9 +28,10 @@ export function AuthProvider({ children }) {
 
   const fetchProfile = async () => {
     try {
+      // /api/user/me returns full user including course/year/semester
       const res = await api.get('/api/user/me')
       setUser(res.data)
-    } catch (err) {
+    } catch {
       localStorage.removeItem('token')
       setUser(null)
     } finally {

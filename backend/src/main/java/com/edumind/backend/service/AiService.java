@@ -20,34 +20,37 @@ public class AiService {
     @Autowired
     private GroqService groqService;
 
-    // Generate summary — checks if already exists first
     public AiOutput summarize(String noteId) {
-        // If summary already generated, return cached version
+        // Check cache — but skip if cached content is blank/garbage
         return aiOutputRepository.findByNoteIdAndType(noteId, "SUMMARY")
+            .filter(existing -> existing.getContent() != null && existing.getContent().trim().length() > 20)
             .orElseGet(() -> {
+                // Delete stale cache if exists
+                aiOutputRepository.findByNoteIdAndType(noteId, "SUMMARY")
+                    .ifPresent(aiOutputRepository::delete);
                 Note note = getNoteOrThrow(noteId);
                 String summary = groqService.summarize(note.getRawText());
                 return saveOutput(note, "SUMMARY", summary);
             });
     }
 
-    // Generate flashcards — checks if already exists first
     public AiOutput generateFlashcards(String noteId) {
         return aiOutputRepository.findByNoteIdAndType(noteId, "FLASHCARD")
+            .filter(existing -> existing.getContent() != null && existing.getContent().trim().length() > 20)
             .orElseGet(() -> {
+                aiOutputRepository.findByNoteIdAndType(noteId, "FLASHCARD")
+                    .ifPresent(aiOutputRepository::delete);
                 Note note = getNoteOrThrow(noteId);
                 String flashcards = groqService.generateFlashcards(note.getRawText());
                 return saveOutput(note, "FLASHCARD", flashcards);
             });
     }
 
-    // Helper — fetch note or throw error
     private Note getNoteOrThrow(String noteId) {
         return noteRepository.findById(noteId)
             .orElseThrow(() -> new RuntimeException("Note not found: " + noteId));
     }
 
-    // Helper — save AI output to database
     private AiOutput saveOutput(Note note, String type, String content) {
         AiOutput output = new AiOutput();
         output.setNote(note);
